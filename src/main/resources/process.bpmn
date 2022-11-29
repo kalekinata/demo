@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0fr9mxs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:process id="demo-process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="username" label="ФИО отправителя" type="string" />
+          <camunda:formField id="sendacc" label="Счёт отправителя" type="string" />
+          <camunda:formField id="name" label="ФИО получателя" type="string" />
+          <camunda:formField id="recipacc" label="Счёт получателя" type="string" />
+          <camunda:formField id="tran_sum" label="Сумма перевода" type="long" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_1fp17al</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1fp17al" sourceRef="StartEvent_1" targetRef="accept_frod" />
+    <bpmn:userTask id="accept_frod" name="Проверка антифрода" camunda:candidateUsers="demo">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="username" label="ФИО отправителя" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="sendacc" label="Счёт отправителя" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="name" label="ФИО получателя" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="recipacc" label="Счёт получателя" type="string">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="tran_sum" label="Сумма перевода" type="long">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="decision" label="Данные одобрены?" type="boolean" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1fp17al</bpmn:incoming>
+      <bpmn:outgoing>Flow_17gy8oi</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_1aj81je">
+      <bpmn:incoming>Flow_17gy8oi</bpmn:incoming>
+      <bpmn:outgoing>Flow_083796j</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14c6dcv</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_17gy8oi" sourceRef="accept_frod" targetRef="Gateway_1aj81je" />
+    <bpmn:sequenceFlow id="Flow_083796j" name="accept" sourceRef="Gateway_1aj81je" targetRef="Activity_177sz7a">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision==true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_14c6dcv" name="refusal" sourceRef="Gateway_1aj81je" targetRef="Activity_1g0surw">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision==false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_177sz7a" name="Акцепт антифродом" camunda:delegateExpression="${acceptRecip}">
+      <bpmn:incoming>Flow_083796j</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ktqdr5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_1g0surw" name="Возврат ошибки" camunda:delegateExpression="${errorMes}">
+      <bpmn:incoming>Flow_14c6dcv</bpmn:incoming>
+      <bpmn:outgoing>Flow_02o3sl0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1ktqdr5" sourceRef="Activity_177sz7a" targetRef="Activity_1qy4uxy" />
+    <bpmn:userTask id="Activity_1qy4uxy" name="Проверка банком">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="sendacc" label="Счёт отправителя" type="string" defaultValue="${sendacc}">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="recipacc" label="Счёт получателя" type="string" defaultValue="${recipacc}">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="tran_sum" label="Сумма перевода" type="long" defaultValue="${tran_sum}">
+            <camunda:validation>
+              <camunda:constraint name="readonly" config="1" />
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField id="commission" label="Комиссия за перевод" type="string" defaultValue="${tran_sum*0.01}" />
+          <camunda:formField id="accept" label="Акцепт перевода" type="boolean" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ktqdr5</bpmn:incoming>
+      <bpmn:outgoing>Flow_19u3uyy</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_19u3uyy" sourceRef="Activity_1qy4uxy" targetRef="Activity_0twlbbt" />
+    <bpmn:serviceTask id="Activity_0twlbbt" name="Получение статуса перевода" camunda:delegateExpression="${successMes}">
+      <bpmn:incoming>Flow_19u3uyy</bpmn:incoming>
+      <bpmn:outgoing>Flow_0aymocc</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0aymocc" sourceRef="Activity_0twlbbt" targetRef="Event_0p02b19" />
+    <bpmn:endEvent id="Event_0p02b19">
+      <bpmn:incoming>Flow_0aymocc</bpmn:incoming>
+      <bpmn:incoming>Flow_02o3sl0</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_02o3sl0" sourceRef="Activity_1g0surw" targetRef="Event_0p02b19" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="demo-process">
+      <bpmndi:BPMNEdge id="Flow_02o3sl0_di" bpmnElement="Flow_02o3sl0">
+        <di:waypoint x="770" y="290" />
+        <di:waypoint x="1110" y="290" />
+        <di:waypoint x="1110" y="138" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0aymocc_di" bpmnElement="Flow_0aymocc">
+        <di:waypoint x="1010" y="120" />
+        <di:waypoint x="1092" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19u3uyy_di" bpmnElement="Flow_19u3uyy">
+        <di:waypoint x="830" y="120" />
+        <di:waypoint x="910" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ktqdr5_di" bpmnElement="Flow_1ktqdr5">
+        <di:waypoint x="650" y="120" />
+        <di:waypoint x="730" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14c6dcv_di" bpmnElement="Flow_14c6dcv">
+        <di:waypoint x="450" y="212" />
+        <di:waypoint x="450" y="290" />
+        <di:waypoint x="670" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="473" y="273" width="34" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_083796j_di" bpmnElement="Flow_083796j">
+        <di:waypoint x="450" y="162" />
+        <di:waypoint x="450" y="120" />
+        <di:waypoint x="550" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="473" y="103" width="34" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17gy8oi_di" bpmnElement="Flow_17gy8oi">
+        <di:waypoint x="370" y="187" />
+        <di:waypoint x="425" y="187" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1fp17al_di" bpmnElement="SequenceFlow_1fp17al">
+        <di:waypoint x="215" y="187" />
+        <di:waypoint x="270" y="187" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="169" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_08mft2c_di" bpmnElement="accept_frod">
+        <dc:Bounds x="270" y="147" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1aj81je_di" bpmnElement="Gateway_1aj81je" isMarkerVisible="true">
+        <dc:Bounds x="425" y="162" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1rbfy0q_di" bpmnElement="Activity_177sz7a">
+        <dc:Bounds x="550" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1s18d3o_di" bpmnElement="Activity_1qy4uxy">
+        <dc:Bounds x="730" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ajvdkc_di" bpmnElement="Activity_0twlbbt">
+        <dc:Bounds x="910" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0uk6a3e_di" bpmnElement="Event_0p02b19">
+        <dc:Bounds x="1092" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0griih6_di" bpmnElement="Activity_1g0surw">
+        <dc:Bounds x="670" y="250" width="100" height="80" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
